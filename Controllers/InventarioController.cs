@@ -40,7 +40,8 @@ namespace swConteo_Sismantec.Controllers
 
                                 inventarioList.Add(item);
                             }
-                        } 
+                        }
+                        conexion.Close();
                     } 
                 } 
 

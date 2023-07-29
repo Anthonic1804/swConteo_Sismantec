@@ -11,6 +11,7 @@ namespace swConteo_Sismantec
         }
 
         public DbSet<Inventario> Inventario { get; set; }
+        public DbSet<Empleado> Empleados { get; set; }
 
     }
 }
