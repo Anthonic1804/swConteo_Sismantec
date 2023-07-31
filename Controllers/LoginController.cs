@@ -51,7 +51,7 @@ namespace swConteo_Sismantec.Controllers
                         }
                         else
                         {
-                            return BadRequest(new RespuestaConexion { Response = "PARAMETROS_EQUIVOCADOS" });
+                            return BadRequest(new Empleado { Id = 0, Nombre = "PARAMETROS_EQUIVOCADOS" });
                         }
                     }
                 }
