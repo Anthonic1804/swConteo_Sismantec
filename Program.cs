@@ -11,11 +11,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // CONFIGURANDO EL DBCONTEXT COMO SERVICIO
-//builder.Services.AddDbContext<ApplicationDbContext>(opciones => 
-// opciones.UseSqlServer("name=conexionServer"));
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddDbContext<ApplicationDbContext>(opciones =>
 {
-    opciones.UseSqlServer("name=conexionServer");
+    opciones.UseSqlServer(builder.Configuration.GetConnectionString("conexionServer"));
 });
 
 var app = builder.Build();

@@ -49,9 +49,9 @@ namespace swConteo_Sismantec.Controllers
 
                 return Ok(inventarioList);
             }
-            catch
+            catch(Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
         }
 

@@ -22,6 +22,7 @@ namespace swConteo_Sismantec.Controllers
             {
                 string nombre = "";
                 int id = 0;
+                int admin = 0;
                 using (SqlConnection conexion = new SqlConnection(context.Database.GetConnectionString()))
                 {
                     using (SqlCommand cmd = new SqlCommand("APP_CONTEO_TBL_EMPLEADOS_LOGIN", conexion))
@@ -36,6 +37,7 @@ namespace swConteo_Sismantec.Controllers
                         {
                             id = reader.GetInt32(reader.GetOrdinal("Id"));
                             nombre = reader.GetString(reader.GetOrdinal("Empleado"));
+                            admin = reader.GetInt32(reader.GetOrdinal("Generar_Token"));
 
                             reader.Close();
 
@@ -47,7 +49,7 @@ namespace swConteo_Sismantec.Controllers
                                 update.ExecuteNonQuery();
                             }
 
-                            return Ok(new Empleado { Id = id, Nombre = nombre });
+                            return Ok(new Empleado { Id = id, Nombre = nombre, Generar_Token = admin });
                         }
                         else
                         {

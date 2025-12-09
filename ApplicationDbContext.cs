@@ -7,7 +7,7 @@ namespace swConteo_Sismantec
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-
+            Console.WriteLine("CADENA: " + Database.GetDbConnection().ConnectionString);
         }
 
         public DbSet<Inventario> Inventario { get; set; }
