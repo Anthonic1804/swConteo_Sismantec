@@ -39,6 +39,9 @@ namespace swConteo_Sismantec.Controllers
                                 item.Id = reader.GetInt32(reader.GetOrdinal("Id"));
                                 item.Codigo = reader.GetString(reader.GetOrdinal("Codigo"));
                                 item.Descripcion = reader.GetString(reader.GetOrdinal("Descripcion"));
+                                item.Existencia = reader.GetDecimal(reader.GetOrdinal("Unidades"));
+                                item.Existencia_u = reader.GetDecimal(reader.GetOrdinal("Fracciones"));
+                                item.Fraccion = reader.GetDecimal(reader.GetOrdinal("Fraccion"));
 
                                 inventarioList.Add(item);
                             }
