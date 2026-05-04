@@ -94,10 +94,22 @@ namespace swConteo_Sismantec.Controllers
                                 detalleConteo.Columns.Add("ID_INVENTARIO", typeof(int));
                                 detalleConteo.Columns.Add("EXISTENCIA", typeof(int));
                                 detalleConteo.Columns.Add("EXISTENCIA_U", typeof(int));
+                                detalleConteo.Columns.Add("IDLOTE", typeof(int));
+                                detalleConteo.Columns.Add("LOTE", typeof(string));
+                                detalleConteo.Columns.Add("FECHAVENCIMIENTO", typeof(DateTime));
+                                detalleConteo.Columns.Add("IDTALLA", typeof(int));
+                                detalleConteo.Columns.Add("TALLA", typeof(string));
 
                                 foreach (var item in parametros.Detalle)
                                 {
-                                    detalleConteo.Rows.Add(item.Id_Inventario, item.Existencias, item.Existencias_u);
+                                    detalleConteo.Rows.Add(item.Id_Inventario, 
+                                        item.Existencias, 
+                                        item.Existencias_u, 
+                                        item.IdLote, 
+                                        item.Lote, 
+                                        item.FechaVencimiento, 
+                                        item.IdTalla, 
+                                        item.Talla);
                                 }
 
                                 var detalle = registrar.Parameters.AddWithValue("@DETALLE", detalleConteo);
@@ -126,6 +138,37 @@ namespace swConteo_Sismantec.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        //--------------------------------------------------------
+        //  Endpoint para obtener los lotes 
+        //--------------------------------------------------------
+        [HttpGet("cantidadlotes")]
+        public async Task<ActionResult<int>> ObtenerCantidadLotes()
+        {
+            var cantidad = await context.Inventario_lotes
+                .AsNoTracking()
+                .CountAsync();
+
+            return Ok(cantidad);
+        }
+
+        [HttpGet("lotes")]
+        public async Task<ActionResult<IReadOnlyList<InventarioLotesEntity>>> ObtenerInventarioLotes()
+        {
+            var lotes = await context.Inventario_lotes
+                .AsNoTracking()
+                .Select(s => new InventarioLotesDTO
+                {
+                    IdLote = s.IdLote,
+                    IdProducto = s.Id_producto,
+                    CodigoProducto = s.Codigo_producto != null ? s.Codigo_producto.Trim() : "",
+                    Lote = s.Lote != null ? s.Lote.Trim() : "",
+                    FechaVencimiento = s.Fecha_vencimiento.ToString("yyyy-MM-dd")
+                })
+                .ToListAsync();
+
+            return Ok(lotes);
         }
     }
 }
