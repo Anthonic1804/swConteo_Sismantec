@@ -17,7 +17,7 @@ namespace swConteo_Sismantec.Controllers
         }
 
         [HttpGet]
-        public IActionResult getBodegas()
+        /*public IActionResult getBodegas()
         {
             try
             {
@@ -48,6 +48,20 @@ namespace swConteo_Sismantec.Controllers
             {
                 return NotFound();
             }
+        }*/
+
+        public async Task<ActionResult<IReadOnlyList<Bodega>>> ObtenerBodegas()
+        { 
+            var lista = await context.Bodegas
+                .AsNoTracking()
+                .Select(b => new Bodega
+                {
+                    Id = b.Id,
+                    Nombre = b.Nombre.Trim()
+                })
+                .ToListAsync();
+
+            return Ok(lista);
         }
     }
 }

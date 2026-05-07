@@ -10,6 +10,7 @@
         public int IdAjusteInventario { get; set; }
         public int IdEmpleado { get; set; }
         public string Empleado { get; set; }
+        public string IdConteoApp { get; set; }
         public List<DetalleConteo> Detalle { get; set; }
     }
 }

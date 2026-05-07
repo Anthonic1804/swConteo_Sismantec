@@ -17,7 +17,7 @@ namespace swConteo_Sismantec.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] Login parametros ) {
+        /*public IActionResult Login([FromBody] Login parametros ) {
             try
             {
                 string nombre = "";
@@ -61,10 +61,69 @@ namespace swConteo_Sismantec.Controllers
             catch {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+        }*/
+
+        public IActionResult IniciarSesion([FromBody] Login parametros)
+        {
+            if (parametros == null || string.IsNullOrEmpty(parametros.Usuario) || string.IsNullOrEmpty(parametros.Clave)) 
+            { 
+                return BadRequest(new Empleado { Id = 0, Nombre = "PARAMETROS_EQUIVOCADOS", Generar_Token = 0});
+            }
+
+            try
+            {
+                var validacion = context.Empleados
+                    .FirstOrDefault(e => e.Usuario_App_Inventario == parametros.Usuario 
+                        && e.Clave_App_Inventario == parametros.Clave);
+
+                if (validacion == null)
+                {
+                    return BadRequest(new Empleado { Id = 0, Nombre = "NO_SE_ENCONTRO", Generar_Token = 0 });
+                }
+
+                var fecha = DateTime.Now;
+
+                validacion.Estado_App_Inventario = "ACTIVO";
+                validacion.Identidad_App_Inventario = parametros.IdentidadApp;
+                validacion.Ultima_Conexion_App_Inventario = fecha;
+
+                context.SaveChanges();
+                return Ok(new Empleado { Id = validacion.Id, Nombre = validacion.Empleado.Trim(), Generar_Token = validacion.Generar_Token });
+
+            }
+            catch (Exception ex) { 
+                return StatusCode(StatusCodes.Status500InternalServerError, new Empleado { Id = 0, Nombre = "ERROR_INTERNO", Generar_Token = 0 });
+            }
+
         }
 
         [HttpPut("logout")]
-        public IActionResult Logout([FromBody] Logout parametros ) {
+        public IActionResult CerrarSesion([FromBody] Logout parametros)
+        {
+            if (parametros == null || parametros.Id <= 0)
+            {
+                return BadRequest(new RespuestaConexion { Response = "PARAMETROS_EQUIVOCADOS" });
+            }
+            try
+            {
+                var empleado = context.Empleados.FirstOrDefault(e => e.Id == parametros.Id);
+                if (empleado == null)
+                {
+                    return NotFound(new RespuestaConexion { Response = "EMPLEADO_NO_ENCONTRADO" });
+                }
+
+                empleado.Estado_App_Inventario = "INACTIVO";
+                empleado.Identidad_App_Inventario = null;
+                context.SaveChanges();
+
+                return Ok(new RespuestaConexion { Response = "PROCESO_EXITOSO" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new RespuestaConexion { Response = "ERROR_INTERNO" });
+            }
+        }
+        /*public IActionResult Logout([FromBody] Logout parametros ) {
             try
             {
                 using (SqlConnection conexion = new SqlConnection(context.Database.GetConnectionString()))
@@ -84,7 +143,7 @@ namespace swConteo_Sismantec.Controllers
             catch {
                 return BadRequest(new RespuestaConexion { Response = "PARAMETROS_EQUIVOCADOS" });
             }
-        }
+        }*/
 
     }
 }

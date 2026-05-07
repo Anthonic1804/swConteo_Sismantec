@@ -19,7 +19,26 @@ namespace swConteo_Sismantec.Controllers
 
         //ENDPOINT PARA OBTERNER EL INVENTARIO
         [HttpGet]
-        public IActionResult GetInventario()
+        public async Task<ActionResult<IReadOnlyList<Inventario>>> ObtenerInventario()
+        {
+            var lista = await context.Inventario
+                .AsNoTracking()
+                .Select(s => new Inventario
+                {
+                    Id = s.Id,
+                    Codigo = s.Codigo != null ? s.Codigo.Trim() : "",
+                    Descripcion = s.Descripcion != null ? s.Descripcion.Trim() : "",
+                    Existencia = s.Existencia,
+                    Existencia_u = s.Existencia_u,
+                    Fraccion = s.Fraccion,
+                    Id_Linea = s.Id_Linea
+                })
+                .ToListAsync();
+
+            return Ok(lista);
+        }
+
+        /*public IActionResult GetInventario()
         {
             try
             {
@@ -56,11 +75,93 @@ namespace swConteo_Sismantec.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
+        }*/
 
         //ENDPOINT PARA REGISTRAR EL CONTEO Y DETALLE EN LA BD
         [HttpPost("registrar")]
         public IActionResult RegistrarConteo([FromBody] ConteoInventario parametros)
+        {
+            if (parametros != null)
+            {
+                using (var transaction = context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        var ajusteInventario = context.Ajuste_inventario
+                            .AsNoTracking()
+                            .FirstOrDefault(a => a.Id == parametros.IdAjusteInventario
+                                && a.Estado.Trim() == "ABIERTO");
+
+                        if (ajusteInventario==null)
+                        {
+                            return StatusCode(StatusCodes.Status404NotFound, new RespuestaConexion { Response = "AJUSTE_INVENTARIO_INCORRECTO" });
+                        }
+
+                        var conteoExistente = context.App_Conteo_Inventario
+                            .AsNoTracking()
+                            .FirstOrDefault(c => c.IdConteoApp == parametros.IdConteoApp
+                                && c.Fecha_envio.Date == parametros.FechaEnvio.Date);
+
+                        if (conteoExistente != null)
+                        {
+                            return StatusCode(StatusCodes.Status404NotFound, new RespuestaConexion { Response = "CONTEO_YA_REGISTRADO" });
+                        }
+                        else
+                        {
+
+                            var nuevoConteo = new AppConteoInventarioEntity
+                            {
+                                Id_empleado = parametros.IdEmpleado,
+                                Fecha_inicio = parametros.FechaInicio,
+                                Fecha_fin = parametros.FechaFin,
+                                Fecha_envio = parametros.FechaEnvio,
+                                Ubicacion = parametros.Ubicacion,
+                                Id_ajuste_inventario = parametros.IdAjusteInventario,
+                                Nombre_empleado = parametros.Empleado,
+                                Id_bodega = parametros.IdBodega,
+                                IdConteoApp = parametros.IdConteoApp
+                            };
+
+                            context.App_Conteo_Inventario.Add(nuevoConteo);
+                            context.SaveChanges();
+
+                            foreach (var item in parametros.Detalle)
+                            {
+                                var detalleConteo = new AppDetalleConteoInventarioEntity
+                                {
+                                    Id_app_conteo_inventario = nuevoConteo.Id,
+                                    Id_inventario = item.Id_Inventario,
+                                    Existencia = item.Existencias,
+                                    Existencia_u = item.Existencias_u,
+                                    IdLote = item.IdLote,
+                                    Lote = item.Lote,
+                                    Fecha_vencimiento = item.FechaVencimiento,
+                                    IdTalla = item.IdTalla,
+                                    Talla = item.Talla
+                                };
+                                context.App_Detalle_Conteo_Inventario.Add(detalleConteo);
+                            }
+
+                            context.SaveChanges();
+                            transaction.Commit();
+
+                            return Ok(new RespuestaConexion { Response = "CONTEO_REGISTRADO" });
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        return BadRequest(new RespuestaConexion { Response = "ERROR_REGISTRAR_CONTEO: " + ex.Message });
+                    }
+                }
+            }
+            else {
+                return BadRequest(new RespuestaConexion { Response = "PARAMETROS_VACIOS" });
+            }
+
+        }
+
+        /*public IActionResult RegistrarConteo([FromBody] ConteoInventario parametros)
         {
             try
             {
@@ -138,7 +239,7 @@ namespace swConteo_Sismantec.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-        }
+        }*/
 
         //--------------------------------------------------------
         //  Endpoint para obtener los lotes 

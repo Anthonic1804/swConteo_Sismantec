@@ -8,5 +8,6 @@
         public decimal Existencia { get; set; }
         public decimal Existencia_u { get; set; }
         public decimal Fraccion { get; set; }
+        public int? Id_Linea { get; set; }
     }
 }
